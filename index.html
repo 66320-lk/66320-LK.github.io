@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专属表白</title>
+    <style>
+        /* 重置页面样式 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* 背景图容器 */
+        .full-bg {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        /* 表白文字样式 */
+        .love-content {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            font-size: 20px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+            z-index: 5;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* 心动值显示容器 */
+        .heart-value {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff4466;
+            font-size: 30px;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
+            z-index: 6;
+            background-color: rgba(255,255,255,0.2);
+            padding: 10px 30px;
+            border-radius: 50px;
+            border: 3px solid #ff4466;
+            letter-spacing: 2px;
+        }
+
+        /* 图片切换按钮 */
+        .img-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 6;
+        }
+
+        .prev-btn, .next-btn {
+            padding: 12px 20px;
+            background-color: rgba(255, 68, 102, 0.8);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .prev-btn:disabled, .next-btn:disabled {
+            background-color: rgba(255, 68, 102, 0.3);
+            border-color: rgba(255,255,255,0.5);
+            cursor: not-allowed;
+        }
+
+        .prev-btn:hover:not(:disabled), .next-btn:hover:not(:disabled) {
+            background-color: #ff2244;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .prev-btn {
+            left: 20px;
+        }
+
+        .next-btn {
+            right: 20px;
+        }
+
+        /* 表白按钮组 */
+        .btn-group {
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translateX(-50%);
+            gap: 20px;
+            z-index: 5;
+            display: none;
+        }
+
+        .love-btn {
+            padding: 12px 25px;
+            font-size: 18px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .yes-btn {
+            background-color: #ff4466;
+        }
+
+        .yes-btn:hover {
+            background-color: #ff2244;
+        }
+
+        .no-btn {
+            background-color: #666;
+        }
+
+        .no-btn:hover {
+            background-color: #444;
+        }
+
+        /* 结果画面容器 */
+        .new-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 24px;
+            z-index: 10;
+        }
+
+        /* 爱心弹窗样式 */
+        .heart-popup {
+            position: absolute;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: #fff;
+            font-family: "微软雅黑", sans-serif;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            animation: fade 7s ease-in-out;
+            z-index: 20;
+        }
+
+        /* 心动值跳动动画 */
+        @keyframes heartBeat {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.3); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        .heart-value.beat {
+            animation: heartBeat 0.8s ease-in-out;
+        }
+
+        /* 爱心弹窗淡入淡出动画 */
+        @keyframes fade {
+            0% { opacity: 0; transform: scale(0.5); }
+            20% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+    </style>
+</head>
+<body>
+    <div class="full-bg" id="bgContainer">
+        <!-- 心动值显示 -->
+        <div class="heart-value" id="heartValue">心动值：1</div>
+
+        <!-- 表白文字 -->
+        <div class="love-content" id="loveText">
+            <h1>xxx</h1>
+            <h2>第一次见你</h2>
+            <p>人群中多看了一眼<br>就再也没能忘掉你的容颜<br>你的笑容像光一样照亮我</p>
+        </div>
+
+        <!-- 切换按钮 -->
+        <button class="img-control prev-btn" id="prevBtn" onclick="changeImage(-1)" disabled>心动-0</button>
+        <button class="img-control next-btn" id="nextBtn" onclick="changeImage(1)">心动+1</button>
+
+        <!-- 表白按钮组 -->
+        <div class="btn-group" id="confessBtnGroup">
+            <button class="love-btn yes-btn" onclick="showYesProcess()">我愿意</button>
+            <button class="love-btn no-btn" onclick="showNoScreen()">不愿意</button>
+        </div>
+
+        <!-- 我愿意结果页 -->
+        <div class="new-screen" id="yesScreen">
+            <h3>太好了！</h3>
+            <p>往后的每一天，我都会把温柔都给你~</p>
+            <h6>微信回复:9</h6>
+        </div>
+
+        <!-- 不愿意结果页 -->
+        <div class="new-screen" id="noScreen">
+            <h3>没关系~</h3>
+            <p>能遇见你，就已经是我的幸运啦</p>
+            <h6>微信回复：6</h6>
+        </div>
+    </div>
+
+    <script>
+        // 背景图+文字数据
+        const bgData = [
+            {img: "k.jpg", title: "第一次见你", desc: "人群中多看了一眼<br>就再也没能忘掉你的容颜<br>你的笑容像光一样照亮我"},
+            {img: "o.jpg", title: "和你相处的时光", desc: "每一次聊天都很惬意<br>每一次见面都满心欢喜<br>我开始期待和你的未来"},
+            {img: "h.jpg", title: "我想对你说", desc: "喜欢你不是一时兴起<br>是深思熟虑后的坚定<br>往后余生，想和你并肩同行"},
+            {img: "a.jpg", title: "你的小细节", desc: "你记得我的喜好<br>包容我的小脾气<br>这些温柔让我彻底沦陷"},
+            {img: "b.jpg", title: "想和你做的事", desc: "想和你看遍山川湖海<br>想和你吃遍人间烟火<br>想把所有美好都与你分享"},
+            {img: "c.jpg", title: "关于我们的未来", desc: "我规划的未来里<br>每一个画面都有你<br>从青丝到白发，只想牵着你"},
+            {img: "d.jpg", title: "最后一句告白", desc: "兜兜转转，满心是你<br>跨越山海，只为奔赴你<br>xxx，我喜欢你，做我女朋友吧！"}
+        ];
+
+        // 全局变量
+        let currentIndex = 0; // 当前页面索引
+        let currentHeartValue = 1; // 初始心动值
+        const btnGroup = document.getElementById("confessBtnGroup");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const heartValueEl = document.getElementById("heartValue");
+
+        // 爱心祝福语
+        const heartMessages = [
+            "我想你了", "往后余生都是你", "满心满眼都是你", "爱你不止今天",
+            "余生请多指教", "你是我的偏爱", "双向奔赴的幸福", "专属你的温柔"
+        ];
+
+        // 初始初始化
+        alert("准备好接受一份独特的礼物了吗");
+        alert("这是我专为你做的");
+        document.getElementById("bgContainer").style.backgroundImage = `url("${bgData[0].img}")`;
+        updateHeartValue();
+
+        // 心动值加减规则（修正后，最终必为520）
+        const valueMap = [
+            {add: 1, subtract: 0},   // 第1页→第2页：+1（1→2）
+            {add: 3, subtract: 1},   // 第2页→第3页：+3（2→5）
+            {add: 15, subtract: 3},  // 第3页→第4页：+15（5→20）
+            {add: 30, subtract: 15}, // 第4页→第5页：+30（20→50）
+            {add: 70, subtract: 30}, // 第5页→第6页：+70（50→120）
+            {add: 400, subtract: 70},// 第6页→第7页：+400（120+400=520）
+            {add: 0, subtract: 400}  // 第7页：无下一页，回退-400
+        ];
+
+        // 切换页面函数
+        function changeImage(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex < 0 || newIndex >= bgData.length) return;
+
+            const loveText = document.getElementById("loveText");
+            loveText.style.opacity = 0;
+            btnGroup.style.display = "none";
+
+            // 计算心动值
+            if (direction === 1) {
+                currentHeartValue += valueMap[currentIndex].add;
+            } else {
+                currentHeartValue -= valueMap[newIndex].subtract;
+            }
+
+            // 更新索引和按钮文字
+            currentIndex = newIndex;
+            prevBtn.textContent = `心动-${valueMap[currentIndex].subtract}`;
+            nextBtn.textContent = `心动+${valueMap[currentIndex].add}`;
+
+            // 延迟更新页面内容
+            setTimeout(() => {
+                document.getElementById("bgContainer").style.backgroundImage = `url("${bgData[currentIndex].img}")`;
+                loveText.innerHTML = currentIndex === 0
+                    ? `<h1>xxx</h1><h2>${bgData[currentIndex].title}</h2><p>${bgData[currentIndex].desc}</p>`
+                    : `<h2>${bgData[currentIndex].title}</h2><p>${bgData[currentIndex].desc}</p>`;
+                loveText.style.opacity = 1;
+                if (currentIndex === 6) btnGroup.style.display = "flex";
+                updateBtnStatus();
+                updateHeartValue(true);
+            }, 300);
+        }
+
+        // 更新心动值显示（带动画）
+        function updateHeartValue(needBeat = false) {
+            heartValueEl.textContent = `心动值：${currentHeartValue}`;
+            if (needBeat) {
+                heartValueEl.classList.add("beat");
+                setTimeout(() => heartValueEl.classList.remove("beat"), 800);
+            }
+        }
+
+        // 更新按钮禁用状态
+        function updateBtnStatus() {
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === 6;
+        }
+
+        // 生成爱心坐标
+        function generateHeartPoints(numPoints, screenW, screenH, popupW, popupH) {
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const t = i / numPoints * 2 * Math.PI;
+                let x = 16 * Math.sin(t) ** 3;
+                let y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+                const scale = Math.min(screenW, screenH) / 45;
+                x = Math.floor(x * scale + screenW / 2 - popupW / 2);
+                y = Math.floor(-y * scale + screenH / 2 - popupH / 2);
+                points.push({ x, y });
+            }
+            return points;
+        }
+
+        // 创建爱心弹窗
+        function createHeartPopup(message, x, y) {
+            const popup = document.createElement('div');
+            popup.className = 'heart-popup';
+            popup.style.left = `${x}px`;
+            popup.style.top = `${y}px`;
+            const colors = ['#ff4466', '#ff6699', '#ff88cc', '#ff2244', '#ff0033'];
+            popup.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            popup.textContent = message;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 7000);
+        }
+
+        // 我愿意流程
+        function showYesProcess() {
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+            const popupW = 120;
+            const popupH = 40;
+            const points = generateHeartPoints(120, screenW, screenH, popupW, popupH);
+
+            points.forEach((point, index) => {
+                const msg = heartMessages[Math.floor(Math.random() * heartMessages.length)];
+                setTimeout(() => createHeartPopup(msg, point.x, point.y), index * 30);
+            });
+
+            setTimeout(() => document.getElementById("yesScreen").style.display = "flex", 7000);
+        }
+
+        // 不愿意流程
+        function showNoScreen() {
+            document.getElementById("noScreen").style.display = "flex";
+        }
+    </script>
+</body>
+</html>
